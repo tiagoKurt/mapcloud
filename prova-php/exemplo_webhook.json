@@ -1,0 +1,13 @@
+{
+  "chave_nfe": "35200514200166000187550010000000015123456789",
+  "tipo_evento": "Em Rota",
+  "descricao": "Mercadoria saiu do centro de distribuição e está em trânsito",
+  "latitude": -23.5505,
+  "longitude": -46.6333,
+  "endereco_evento": "Centro de Distribuição São Paulo - Marginal Tietê",
+  "cidade_evento": "São Paulo",
+  "uf_evento": "SP",
+  "timestamp_evento": "2025-09-29 15:30:00",
+  "responsavel_evento": "João Motorista",
+  "observacoes_evento": "Veículo: ABC-1234 | Previsão de entrega: 2 horas"
+}

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<NFe xmlns="http://www.portalfiscal.inf.br/nfe">
+  <infNFe Id="NFe35190512345678000195550010000000011002200016" versao="4.00">
+    <!-- Identificação -->
+    <ide>
+      <cUF>35</cUF> <!-- São Paulo -->
+      <cNF>00000016</cNF>
+      <natOp>Venda de mercadoria</natOp>
+      <mod>55</mod> <!-- Modelo NF-e -->
+      <serie>1</serie>
+      <nNF>1100</nNF>
+      <dhEmi>2025-09-29T20:00:00-03:00</dhEmi>
+      <tpNF>1</tpNF> <!-- 0=Entrada,1=Saída -->
+      <idDest>1</idDest>
+      <cMunFG>3550308</cMunFG> <!-- São Paulo (código IBGE) -->
+      <tpImp>1</tpImp>
+      <tpEmis>1</tpEmis>
+      <cDV>6</cDV>
+      <tpAmb>2</tpAmb> <!-- 1=Produção,2=Homologação -->
+      <finNFe>1</finNFe>
+      <indFinal>1</indFinal>
+      <indPres>1</indPres>
+      <procEmi>0</procEmi>
+      <verProc>ExemploSys 1.0</verProc>
+    </ide>
+
+    <!-- Emitente -->
+    <emit>
+      <CNPJ>12345678000195</CNPJ>
+      <xNome>Empresa Exemplo LTDA</xNome>
+      <xFant>Empresa Exemplo</xFant>
+      <enderEmit>
+        <xLgr>Rua Exemplo</xLgr>
+        <nro>100</nro>
+        <xBairro>Centro</xBairro>
+        <cMun>3550308</cMun>
+        <xMun>São Paulo</xMun>
+        <UF>SP</UF>
+        <CEP>01000000</CEP>
+        <cPais>1058</cPais>
+        <xPais>Brasil</xPais>
+        <fone>1130000000</fone>
+      </enderEmit>
+      <IE>111111111111</IE>
+      <CRT>1</CRT> <!-- Regime tributário: 1=Simples Nacional? (exemplo) -->
+    </emit>
+
+    <!-- Destinatário -->
+    <dest>
+      <CNPJ>98765432000198</CNPJ>
+      <xNome>Cliente Exemplo SA</xNome>
+      <enderDest>
+        <xLgr>Av Cliente</xLgr>
+        <nro>500</nro>
+        <xBairro>Jardim</xBairro>
+        <cMun>3304557</cMun>
+        <xMun>Rio de Janeiro</xMun>
+        <UF>RJ</UF>
+        <CEP>20000000</CEP>
+        <cPais>1058</cPais>
+        <xPais>Brasil</xPais>
+        <fone>2120000000</fone>
+      </enderDest>
+      <indIEDest>1</indIEDest>
+      <IE>222222222222</IE>
+    </dest>
+
+    <!-- Detalhes dos produtos / serviços (pode repetir det para cada item) -->
+    <det nItem="1">
+      <prod>
+        <cProd>0001</cProd>
+        <cEAN></cEAN>
+        <xProd>Caneta esferográfica azul</xProd>
+        <NCM>96081000</NCM>
+        <CFOP>5101</CFOP>
+        <uCom>UN</uCom>
+        <qCom>10.0000</qCom>
+        <vUnCom>2.50</vUnCom>
+        <vProd>25.00</vProd>
+        <cEANTrib></cEANTrib>
+        <uTrib>UN</uTrib>
+        <qTrib>10.0000</qTrib>
+        <vUnTrib>2.50</vUnTrib>
+        <indTot>1</indTot>
+      </prod>
+      <imposto>
+        <!-- ICMS -->
+        <ICMS>
+          <ICMS00>
+            <orig>0</orig>
+            <CST>00</CST>
+            <modBC>0</modBC>
+            <vBC>25.00</vBC>
+            <pICMS>18.00</pICMS>
+            <vICMS>4.50</vICMS>
+          </ICMS00>
+        </ICMS>
+
+        <!-- IPI -->
+        <IPI>
+          <cITrib>999</cITrib>
+          <IPITrib>
+            <CNPJProd></CNPJProd>
+            <cEnq>999</cEnq>
+            <CST>50</CST>
+            <vBC>0.00</vBC>
+            <pIPI>0.00</pIPI>
+            <vIPI>0.00</vIPI>
+          </IPITrib>
+        </IPI>
+
+        <!-- PIS -->
+        <PIS>
+          <PISAliq>
+            <CST>01</CST>
+            <vBC>25.00</vBC>
+            <pPIS>1.65</pPIS>
+            <vPIS>0.41</vPIS>
+          </PISAliq>
+        </PIS>
+
+        <!-- COFINS -->
+        <COFINS>
+          <COFINSAliq>
+            <CST>01</CST>
+            <vBC>25.00</vBC>
+            <pCOFINS>7.60</pCOFINS>
+            <vCOFINS>1.90</vCOFINS>
+          </COFINSAliq>
+        </COFINS>
+      </imposto>
+    </det>
+
+    <!-- Totais -->
+    <total>
+      <ICMSTot>
+        <vBC>25.00</vBC>
+        <vICMS>4.50</vICMS>
+        <vICMSDeson>0.00</vICMSDeson>
+        <vFCP>0.00</vFCP>
+        <vBCST>0.00</vBCST>
+        <vST>0.00</vST>
+        <vProd>25.00</vProd>
+        <vFrete>0.00</vFrete>
+        <vSeg>0.00</vSeg>
+        <vDesc>0.00</vDesc>
+        <vII>0.00</vII>
+        <vIPI>0.00</vIPI>
+        <vPIS>0.41</vPIS>
+        <vCOFINS>1.90</vCOFINS>
+        <vOutro>0.00</vOutro>
+        <vNF>27.31</vNF>
+      </ICMSTot>
+    </total>
+
+    <!-- Transporte -->
+    <transp>
+      <modFrete>0</modFrete> <!-- 0=Emitente por conta do remetente -->
+    </transp>
+
+    <!-- Cobrança -->
+    <cobr>
+      <fat>
+        <nFat>FAT12345</nFat>
+        <vOrig>27.31</vOrig>
+        <vDesc>0.00</vDesc>
+        <vLiq>27.31</vLiq>
+      </fat>
+      <dup>
+        <nDup>001</nDup>
+        <dVenc>2025-10-29</dVenc>
+        <vDup>27.31</vDup>
+      </dup>
+    </cobr>
+
+    <!-- Informações Adicionais -->
+    <infAdic>
+      <infCpl>Observações complementares da NF-e (ex.: "Mercadoria tributada pelo ICMS").</infCpl>
+    </infAdic>
+
+  </infNFe>
+
+  <!-- Placeholder de assinatura: em NF-e real a tag Signature é gerada pela assinatura digital -->
+  <Signature>
+    <!-- Assinatura digital (XML-DSig) aqui -->
+    <SignedInfo>...</SignedInfo>
+    <SignatureValue>...</SignatureValue>
+    <KeyInfo>...</KeyInfo>
+  </Signature>
+</NFe>

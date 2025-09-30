@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapCloud - Sistema de Rastreamento de Entregas</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" 
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" 
+          crossorigin=""/>
+    
+    <!-- CSS Customizado -->
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>MapCloud</h1>
+                <p>Sistema de Rastreamento de Entregas</p>
+            </div>
+        </header>
+
+        <!-- Navegação -->
+        <nav class="nav">
+            <ul class="nav-list">
+                <li><a href="#rastreamento" class="nav-link active" data-section="rastreamento">Rastreamento</a></li>
+                <li><a href="#entregas" class="nav-link" data-section="entregas">Entregas</a></li>
+                <li><a href="#metricas" class="nav-link" data-section="metricas">Métricas</a></li>
+                <li><a href="#upload" class="nav-link" data-section="upload">Upload NF-e</a></li>
+            </ul>
+        </nav>
+
+        <!-- Seção de Rastreamento -->
+        <section id="rastreamento" class="section active">
+            <div class="section-header">
+                <h2>Rastreamento de Entrega</h2>
+            </div>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <input type="text" id="chaveNfeInput" placeholder="Digite a chave da NF-e (44 dígitos)" maxlength="44">
+                    <button id="buscarBtn" class="btn btn-primary">Buscar</button>
+                </div>
+            </div>
+
+            <div id="resultadoRastreamento" class="resultado-container" style="display: none;">
+                <!-- Informações da Entrega -->
+                <div class="info-entrega">
+                    <h3>Informações da Entrega</h3>
+                    <div id="dadosEntrega" class="dados-entrega"></div>
+                </div>
+
+                <!-- Mapa -->
+                <div class="mapa-container">
+                    <h3>Rota de Entrega</h3>
+                    <div id="mapa" class="mapa"></div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline-container">
+                    <h3>Timeline de Eventos</h3>
+                    <div id="timeline" class="timeline"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seção de Entregas -->
+        <section id="entregas" class="section">
+            <div class="section-header">
+                <h2>Lista de Entregas</h2>
+                <div class="filtros">
+                    <select id="filtroStatus">
+                        <option value="">Todos os Status</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Coletada">Coletada</option>
+                        <option value="Em Rota">Em Rota</option>
+                        <option value="Em Trânsito">Em Trânsito</option>
+                        <option value="Entregue">Entregue</option>
+                    </select>
+                    <button id="atualizarEntregas" class="btn btn-secondary">Atualizar</button>
+                </div>
+            </div>
+            
+            <div id="listaEntregas" class="lista-entregas">
+                <div class="loading">Carregando entregas...</div>
+            </div>
+        </section>
+
+        <!-- Seção de Métricas -->
+        <section id="metricas" class="section">
+            <div class="section-header">
+                <h2>Métricas e KPIs</h2>
+                <div class="filtros">
+                    <select id="filtroPeriodo">
+                        <option value="7">Últimos 7 dias</option>
+                        <option value="30" selected>Últimos 30 dias</option>
+                        <option value="90">Últimos 90 dias</option>
+                    </select>
+                    <button id="atualizarMetricas" class="btn btn-secondary">Atualizar</button>
+                </div>
+            </div>
+            
+            <div id="metricasContent" class="metricas-content">
+                <div class="loading">Carregando métricas...</div>
+            </div>
+        </section>
+
+        <!-- Seção de Upload -->
+        <section id="upload" class="section">
+            <div class="section-header">
+                <h2>Upload de NF-e</h2>
+            </div>
+            
+            <div class="upload-container">
+                <form id="uploadForm" enctype="multipart/form-data">
+                    <div class="upload-box">
+                        <input type="file" id="xmlFile" name="xml_file" accept=".xml" required>
+                        <label for="xmlFile" class="upload-label">
+                            <span class="upload-icon">📄</span>
+                            <span class="upload-text">Selecione um arquivo XML de NF-e</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Processar NF-e</button>
+                </form>
+                
+                <div id="uploadResult" class="upload-result" style="display: none;"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal de Loading -->
+    <div id="loadingModal" class="modal">
+        <div class="modal-content">
+            <div class="loading-spinner"></div>
+            <p>Processando...</p>
+        </div>
+    </div>
+
+    <!-- Modal de Erro -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <h3>Erro</h3>
+            <p id="errorMessage"></p>
+            <button class="btn btn-secondary" onclick="fecharModal('errorModal')">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" 
+            integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" 
+            crossorigin=""></script>
+    <script src="assets/app.js"></script>
+</body>
+</html>

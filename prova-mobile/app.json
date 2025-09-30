@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "App Entregas",
+    "slug": "prova-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "sdkVersion": "54.0.0",
+    "platforms": ["ios", "android"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.suaempresa.appentregas",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Este app precisa acessar sua localização para registrar eventos de entrega.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Este app precisa acessar sua localização para registrar eventos de entrega.",
+        "NSCameraUsageDescription": "Este app precisa acessar a câmera para tirar fotos de evidência das entregas.",
+        "NSPhotoLibraryUsageDescription": "Este app precisa acessar a galeria para salvar fotos de evidência."
+      }
+    },
+    "android": {
+      "package": "com.suaempresa.appentregas",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-location",
+      "expo-camera",
+      "expo-secure-store"
+    ]
+  }
+}
