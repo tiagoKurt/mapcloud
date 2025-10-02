@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react';
 import NetInfo from '@react-native-community/netinfo';
 
-/**
- * Hook para monitorar o status da conexão de rede
- * @returns {Object} { isConnected, isInternetReachable, type }
- */
+
 export function useNetworkStatus() {
   const [networkState, setNetworkState] = useState({
     isConnected: false,

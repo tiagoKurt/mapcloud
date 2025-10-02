@@ -2,10 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const TOKEN_KEY = 'auth_token';
 
-/**
- * Salva o token de autenticação de forma segura.
- * @param {string} token - O token a ser salvo.
- */
+
 export async function saveAuthToken(token) {
   try {
     await SecureStore.setItemAsync(TOKEN_KEY, token);
@@ -14,10 +11,7 @@ export async function saveAuthToken(token) {
   }
 }
 
-/**
- * Recupera o token de autenticação do armazenamento seguro.
- * @returns {Promise<string|null>} O token, ou null se não for encontrado.
- */
+
 export async function getAuthToken() {
   try {
     const token = await SecureStore.getItemAsync(TOKEN_KEY);
@@ -28,9 +22,7 @@ export async function getAuthToken() {
   }
 }
 
-/**
- * Remove o token de autenticação do armazenamento seguro.
- */
+
 export async function clearAuthToken() {
   try {
     await SecureStore.deleteItemAsync(TOKEN_KEY);

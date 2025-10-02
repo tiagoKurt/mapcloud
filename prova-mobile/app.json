@@ -6,13 +6,19 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "sdkVersion": "54.0.0",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.suaempresa.appentregas",
+      "config": {
+        "googleMapsApiKey": "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao"
+      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Este app precisa acessar sua localização para registrar eventos de entrega.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Este app precisa acessar sua localização para registrar eventos de entrega.",
@@ -27,13 +33,22 @@
         "ACCESS_COARSE_LOCATION",
         "CAMERA",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_EXTERNAL_STORAGE"
-      ]
+        "READ_EXTERNAL_STORAGE",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+        "config": {
+          "googleMaps": {
+            "apiKey": "AIzaSyAOVYRIgupAurZup5y1PRh8Ismb1A3lLao"
+          }
+        }
     },
     "plugins": [
       "expo-location",
       "expo-camera",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-maps"
     ]
   }
 }

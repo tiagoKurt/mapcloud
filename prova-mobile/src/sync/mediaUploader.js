@@ -4,9 +4,7 @@ import * as FileSystem from 'expo-file-system';
 
 const MAX_RETRY_COUNT = 3;
 
-/**
- * Processa uploads de mídia pendentes
- */
+
 export async function processMediaUploads() {
   try {
     // Busca mídias pendentes ou com falha (dentro do limite de tentativas)
@@ -27,9 +25,7 @@ export async function processMediaUploads() {
   }
 }
 
-/**
- * Processa um único arquivo de mídia
- */
+
 async function processSingleMedia(media) {
   try {
     // Verifica se o arquivo ainda existe
@@ -62,9 +58,7 @@ async function processSingleMedia(media) {
   }
 }
 
-/**
- * Marca mídia como concluída
- */
+
 async function markMediaAsCompleted(media) {
   await database.updateMedia(media.id, {
     sync_status: 'COMPLETED',
@@ -72,9 +66,7 @@ async function markMediaAsCompleted(media) {
   });
 }
 
-/**
- * Marca mídia como falhada
- */
+
 async function markMediaAsFailed(media, reason) {
   await database.updateMedia(media.id, {
     sync_status: 'FAILED',
@@ -82,9 +74,7 @@ async function markMediaAsFailed(media, reason) {
   });
 }
 
-/**
- * Trata erro de upload de mídia
- */
+
 async function handleMediaUploadError(media, error) {
   const newRetryCount = media.retry_count + 1;
   
@@ -94,9 +84,7 @@ async function handleMediaUploadError(media, error) {
   });
 }
 
-/**
- * Obtém o tipo MIME baseado no tipo de mídia
- */
+
 function getMimeType(type) {
   switch (type) {
     case 'PHOTO':
@@ -108,16 +96,12 @@ function getMimeType(type) {
   }
 }
 
-/**
- * Obtém o nome do arquivo do caminho
- */
+
 function getFileName(path) {
   return path.split('/').pop();
 }
 
-/**
- * Inicia o processamento periódico de uploads
- */
+
 export function startMediaUploadScheduler() {
   // Processa imediatamente
   processMediaUploads();

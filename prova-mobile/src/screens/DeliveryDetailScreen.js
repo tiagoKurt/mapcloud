@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { database } from '../database';
 import { getCurrentLocation } from '../utils/locationService';
+import SimpleMap from '../components/SimpleMap';
 
 const DeliveryDetailScreen = ({ route, navigation }) => {
   const { deliveryId } = route.params;
@@ -31,34 +32,43 @@ const DeliveryDetailScreen = ({ route, navigation }) => {
   const handleStartDelivery = async () => {
     setIsLoading(true);
     try {
-      // Atualiza status da entrega
-      await database.updateDelivery(deliveryId, {
-        status: 'IN_PROGRESS',
-        updated_at: Date.now(),
-      });
-
-      // Obtém localização atual
+      // 1. Obtém localização atual (Requisito: Iniciar com GPS/hora)
       let location = { latitude: 0, longitude: 0 };
       try {
         location = await getCurrentLocation();
       } catch (error) {
         console.warn('Não foi possível obter localização:', error);
       }
+      const eventData = {
+          delivery_id: deliveryId,
+          type: 'STARTED',
+          latitude: location.latitude,
+          longitude: location.longitude,
+          created_at: Date.now(),
+          notes: 'Entrega iniciada com GPS'
+      };
 
-      // Cria evento de início
-      await database.createEvent({
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        deliveryId,
-        type: 'STARTED',
-        latitude: location.latitude,
-        longitude: location.longitude,
-        createdAt: Date.now(),
+      // 2. Cria Evento Localmente
+      await database.createEvent(eventData); 
+
+      // 3. Adiciona na Fila de Sincronização de Dados (Offline-First)
+      await database.addDataQueueItem({
+          delivery_id: deliveryId,
+          type: 'DELIVERY_EVENT',
+          payload: { event: eventData },
+      });
+      
+      // 4. Atualiza status da entrega localmente
+      await database.updateDelivery(deliveryId, {
+        status: 'IN_PROGRESS',
+        updated_at: Date.now(),
+        sync_status: 'PENDING' // Marca a entrega para sincronização (o item de fila cuida do reenvio)
       });
 
       // Recarrega os dados
       await loadDelivery();
       
-      Alert.alert('Sucesso', 'Entrega iniciada com sucesso!');
+      Alert.alert('Sucesso', 'Entrega iniciada! Será sincronizada automaticamente.');
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível iniciar a entrega');
       console.error('Error starting delivery:', error);
@@ -68,8 +78,8 @@ const DeliveryDetailScreen = ({ route, navigation }) => {
   };
 
   const handleCompleteDelivery = () => {
-    // Navegar para tela de conclusão (será implementada)
-    Alert.alert('Info', 'Funcionalidade de conclusão será implementada');
+    // Navegar para a nova tela de conclusão
+    navigation.navigate('DeliveryConclusion', { deliveryId });
   };
 
   const handleFailDelivery = () => {
@@ -88,38 +98,11 @@ const DeliveryDetailScreen = ({ route, navigation }) => {
   const handleFailWithReason = async (reason) => {
     setIsLoading(true);
     try {
-      // Atualiza status da entrega
-      await database.updateDelivery(deliveryId, {
-        status: 'FAILED',
-        updated_at: Date.now(),
-      });
-
-      // Obtém localização atual
-      let location = { latitude: 0, longitude: 0 };
-      try {
-        location = await getCurrentLocation();
-      } catch (error) {
-        console.warn('Não foi possível obter localização:', error);
-      }
-
-      // Cria evento de falha
-      await database.createEvent({
-        id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        deliveryId,
-        type: 'FAILED',
-        reason,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        createdAt: Date.now(),
-      });
-
-      // Recarrega os dados
-      await loadDelivery();
+      // 1. Navegar para a tela de conclusão de falha (para foto opcional)
+      navigation.navigate('DeliveryFailure', { deliveryId, reason });
       
-      Alert.alert('Sucesso', 'Entrega marcada como falhada');
-      navigation.goBack();
     } catch (error) {
-      Alert.alert('Erro', 'Não foi possível marcar a entrega como falhada');
+      Alert.alert('Erro', 'Não foi possível iniciar o processo de falha');
       console.error('Error failing delivery:', error);
     } finally {
       setIsLoading(false);
@@ -169,63 +152,77 @@ const DeliveryDetailScreen = ({ route, navigation }) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.recipientName}>{delivery.recipient_name}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(delivery.status) }]}>
-            <Text style={styles.statusText}>{getStatusText(delivery.status)}</Text>
+    <View style={styles.container}>
+      {}
+      <View style={styles.mapContainer}>
+        <SimpleMap 
+          delivery={delivery} 
+          showRoute={delivery.status === 'IN_PROGRESS' || delivery.status === 'PENDING'}
+          onLocationUpdate={(location) => {
+            console.log('Localização atualizada:', location);
+          }}
+        />
+      </View>
+
+      {}
+      <ScrollView style={styles.contentContainer}>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.recipientName}>{delivery.recipient_name}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(delivery.status) }]}>
+              <Text style={styles.statusText}>{getStatusText(delivery.status)}</Text>
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Endereço</Text>
+            <Text style={styles.address}>{delivery.address}</Text>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Informações</Text>
+            <Text style={styles.infoText}>
+              Criado em: {new Date(delivery.created_at).toLocaleString('pt-BR')}
+            </Text>
+            <Text style={styles.infoText}>
+              Atualizado em: {new Date(delivery.updated_at).toLocaleString('pt-BR')}
+            </Text>
+          </View>
+
+          <View style={styles.actionsContainer}>
+            {canStartDelivery(delivery.status) && (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.startButton]}
+                onPress={handleStartDelivery}
+                disabled={isLoading}
+              >
+                <Text style={styles.actionButtonText}>Iniciar Entrega</Text>
+              </TouchableOpacity>
+            )}
+
+            {canCompleteDelivery(delivery.status) && (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.completeButton]}
+                onPress={handleCompleteDelivery}
+                disabled={isLoading}
+              >
+                <Text style={styles.actionButtonText}>Concluir Entrega</Text>
+              </TouchableOpacity>
+            )}
+
+            {canFailDelivery(delivery.status) && (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.failButton]}
+                onPress={handleFailDelivery}
+                disabled={isLoading}
+              >
+                <Text style={styles.actionButtonText}>Não Entregue</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Endereço</Text>
-          <Text style={styles.address}>{delivery.address}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informações</Text>
-          <Text style={styles.infoText}>
-            Criado em: {new Date(delivery.created_at).toLocaleString('pt-BR')}
-          </Text>
-          <Text style={styles.infoText}>
-            Atualizado em: {new Date(delivery.updated_at).toLocaleString('pt-BR')}
-          </Text>
-        </View>
-
-        <View style={styles.actionsContainer}>
-          {canStartDelivery(delivery.status) && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.startButton]}
-              onPress={handleStartDelivery}
-              disabled={isLoading}
-            >
-              <Text style={styles.actionButtonText}>Iniciar Entrega</Text>
-            </TouchableOpacity>
-          )}
-
-          {canCompleteDelivery(delivery.status) && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.completeButton]}
-              onPress={handleCompleteDelivery}
-              disabled={isLoading}
-            >
-              <Text style={styles.actionButtonText}>Concluir Entrega</Text>
-            </TouchableOpacity>
-          )}
-
-          {canFailDelivery(delivery.status) && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.failButton]}
-              onPress={handleFailDelivery}
-              disabled={isLoading}
-            >
-              <Text style={styles.actionButtonText}>Não Entregue</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 
@@ -235,6 +232,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  mapContainer: {
+    height: 300,
+    marginBottom: 10,
+  },
+  contentContainer: {
+    flex: 1,
   },
   content: {
     padding: 20,

@@ -17,7 +17,7 @@ const AppNavigator = () => {
       if (token) {
         // Se houver token, consideramos o usuário autenticado
         // Aqui, você pode adicionar uma chamada para buscar os dados do usuário
-        setSession(token, {/* dados do usuário se disponíveis */});
+        setSession(token, {});
       }
       setIsLoading(false);
     };

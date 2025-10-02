@@ -1,12 +1,39 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as ImagePicker from 'expo-image-picker';
 
-/**
- * Salva uma foto no armazenamento local
- * @param {string} tempPath - Caminho temporário da foto
- * @param {string} deliveryId - ID da entrega
- * @param {string} type - Tipo da foto (ex: 'evidence', 'signature')
- * @returns {Promise<string>} Caminho final da foto salva
- */
+
+export async function capturePhoto(deliveryId, type = 'evidence') {
+  try {
+    // Solicita permissão da câmera
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      throw new Error('Permissão da câmera negada');
+    }
+
+    // Captura a foto
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (result.canceled) {
+      throw new Error('Captura cancelada');
+    }
+
+    // Salva a foto localmente
+    const photoUri = result.assets[0].uri;
+    const savedPath = await savePhotoToLocal(photoUri, deliveryId, type);
+    
+    return savedPath;
+  } catch (error) {
+    console.error('Erro ao capturar foto:', error);
+    throw error;
+  }
+}
+
+
 export async function savePhotoToLocal(tempPath, deliveryId, type = 'evidence') {
   try {
     // Cria diretório para fotos se não existir
@@ -35,12 +62,7 @@ export async function savePhotoToLocal(tempPath, deliveryId, type = 'evidence') 
   }
 }
 
-/**
- * Salva uma assinatura (base64) como arquivo PNG
- * @param {string} base64Data - Dados da assinatura em base64
- * @param {string} deliveryId - ID da entrega
- * @returns {Promise<string>} Caminho final da assinatura salva
- */
+
 export async function saveSignatureToLocal(base64Data, deliveryId) {
   try {
     // Cria diretório para assinaturas se não existir
@@ -70,14 +92,7 @@ export async function saveSignatureToLocal(base64Data, deliveryId) {
   }
 }
 
-/**
- * Cria um registro de mídia no banco de dados
- * @param {Object} database - Instância do banco de dados
- * @param {string} deliveryId - ID da entrega
- * @param {string} type - Tipo da mídia ('PHOTO' ou 'SIGNATURE')
- * @param {string} localPath - Caminho local do arquivo
- * @returns {Promise<void>}
- */
+
 export async function createMediaRecord(database, deliveryId, type, localPath) {
   const media = {
     id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,

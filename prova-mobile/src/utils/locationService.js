@@ -1,8 +1,6 @@
 import * as Location from 'expo-location';
 
-/**
- * Solicita permissão de localização
- */
+
 export async function requestLocationPermission() {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -13,10 +11,7 @@ export async function requestLocationPermission() {
   }
 }
 
-/**
- * Obtém a localização atual do dispositivo
- * @returns {Promise<{latitude: number, longitude: number}>}
- */
+
 export async function getCurrentLocation() {
   const hasPermission = await requestLocationPermission();
   

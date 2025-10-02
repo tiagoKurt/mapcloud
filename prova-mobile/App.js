@@ -12,18 +12,13 @@ const App = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        console.log('Inicializando app com dados mockados...');
         await initDatabase();
-        console.log('Dados mockados inicializados');
-        
         await createSampleData();
-        console.log('Dados de exemplo carregados');
-        
         setIsAppReady(true);
       } catch (error) {
         console.error('Erro ao inicializar app:', error);
         setError(error.message);
-        setIsAppReady(true); // Continua mesmo com erro
+        setIsAppReady(true);
       }
     };
 

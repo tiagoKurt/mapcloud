@@ -1,19 +1,17 @@
-// Sistema de dados mockados para substituir o banco de dados SQLite
-
 let deliveries = [
   {
     id: 'del_1',
     recipient_name: 'João Silva',
-    address: 'Rua das Flores, 123, Centro, Cidade',
+    address: 'Rua Augusta, 1000, Consolação, São Paulo - SP',
     status: 'PENDING',
-    created_at: Date.now() - 3600000, // 1 hora atrás
+    created_at: Date.now() - 3600000,
     updated_at: Date.now() - 3600000,
     sync_status: 'PENDING'
   },
   {
     id: 'del_2',
     recipient_name: 'Maria Santos',
-    address: 'Avenida Principal, 456, Bairro Novo, Cidade',
+    address: 'Avenida Paulista, 1500, Bela Vista, São Paulo - SP',
     status: 'IN_PROGRESS',
     created_at: Date.now() - 7200000, // 2 horas atrás
     updated_at: Date.now() - 1800000, // 30 minutos atrás
@@ -22,11 +20,56 @@ let deliveries = [
   {
     id: 'del_3',
     recipient_name: 'Pedro Oliveira',
-    address: 'Travessa da Paz, 789, Vila Velha, Cidade',
+    address: 'Rua da Consolação, 2000, Centro, São Paulo - SP',
     status: 'COMPLETED',
     created_at: Date.now() - 10800000, // 3 horas atrás
     updated_at: Date.now() - 5400000, // 1.5 horas atrás
     sync_status: 'COMPLETED'
+  },
+  {
+    id: 'del_4',
+    recipient_name: 'Ana Costa',
+    address: 'Rua Oscar Freire, 500, Jardins, São Paulo - SP',
+    status: 'PENDING',
+    created_at: Date.now() - 1800000, // 30 minutos atrás
+    updated_at: Date.now() - 1800000,
+    sync_status: 'PENDING'
+  },
+  {
+    id: 'del_5',
+    recipient_name: 'Carlos Mendes',
+    address: 'Avenida Faria Lima, 3000, Itaim Bibi, São Paulo - SP',
+    status: 'PENDING',
+    created_at: Date.now() - 900000, // 15 minutos atrás
+    updated_at: Date.now() - 900000,
+    sync_status: 'PENDING'
+  },
+  {
+    id: 'del_6',
+    recipient_name: 'Fernanda Lima',
+    address: 'Rua Haddock Lobo, 800, Cerqueira César, São Paulo - SP',
+    status: 'PENDING',
+    created_at: Date.now() - 600000, // 10 minutos atrás
+    updated_at: Date.now() - 600000,
+    sync_status: 'PENDING'
+  },
+  {
+    id: 'del_7',
+    recipient_name: 'Roberto Alves',
+    address: 'Avenida Rebouças, 1200, Pinheiros, São Paulo - SP',
+    status: 'PENDING',
+    created_at: Date.now() - 300000, // 5 minutos atrás
+    updated_at: Date.now() - 300000,
+    sync_status: 'PENDING'
+  },
+  {
+    id: 'del_8',
+    recipient_name: 'Juliana Pereira',
+    address: 'Rua Bela Cintra, 1500, Jardins, São Paulo - SP',
+    status: 'PENDING',
+    created_at: Date.now() - 120000, // 2 minutos atrás
+    updated_at: Date.now() - 120000,
+    sync_status: 'PENDING'
   }
 ];
 
@@ -67,6 +110,9 @@ let events = [
 ];
 
 let media = [];
+
+// NOVA FILA para dados estruturados
+let dataQueue = [];
 
 // Funções para simular operações de banco de dados
 export const mockDatabase = {
@@ -147,6 +193,45 @@ export const mockDatabase = {
       return media[index];
     }
     return null;
+  },
+
+  // -- NOVAS FUNÇÕES DA FILA DE DADOS --
+  getDataQueue: async () => {
+    return [...dataQueue];
+  },
+
+  addDataQueueItem: async (item) => {
+    // Simula a persistência de um novo evento/conclusão na fila
+    const newItem = {
+      ...item,
+      id: `queue_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+      status: 'PENDING',
+      retry_count: 0,
+      created_at: Date.now(),
+    };
+    dataQueue.push(newItem);
+    console.log(`[MOCK DB] Item adicionado à Fila de Dados: ${newItem.id}`);
+    return newItem;
+  },
+
+  removeDataQueueItem: async (itemId) => {
+    const initialLength = dataQueue.length;
+    dataQueue = dataQueue.filter(item => item.id !== itemId);
+    if (initialLength > dataQueue.length) {
+        console.log(`[MOCK DB] Item removido da Fila de Dados: ${itemId}`);
+    }
+  },
+
+  updateDataQueueItem: async (itemId, updateData) => {
+    const index = dataQueue.findIndex(item => item.id === itemId);
+    if (index !== -1) {
+      dataQueue[index] = {
+        ...dataQueue[index],
+        ...updateData,
+      };
+      return dataQueue[index];
+    }
+    return null;
   }
 };
 
@@ -156,5 +241,6 @@ export const initMockDatabase = async () => {
   console.log(`${deliveries.length} entregas carregadas`);
   console.log(`${events.length} eventos carregados`);
   console.log(`${media.length} arquivos de mídia carregados`);
+  console.log(`${dataQueue.length} itens na fila de dados`);
   return true;
 };
