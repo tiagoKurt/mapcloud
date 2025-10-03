@@ -65,22 +65,18 @@ export async function savePhotoToLocal(tempPath, deliveryId, type = 'evidence') 
 
 export async function saveSignatureToLocal(base64Data, deliveryId) {
   try {
-    // Cria diretório para assinaturas se não existir
     const signaturesDir = `${FileSystem.documentDirectory}signatures/`;
     const dirInfo = await FileSystem.getInfoAsync(signaturesDir);
     if (!dirInfo.exists) {
       await FileSystem.makeDirectoryAsync(signaturesDir, { intermediates: true });
     }
 
-    // Gera nome único para o arquivo
     const timestamp = Date.now();
     const fileName = `${deliveryId}_signature_${timestamp}.png`;
     const finalPath = `${signaturesDir}${fileName}`;
 
-    // Remove o prefixo data:image/png;base64, se presente
     const cleanBase64 = base64Data.replace(/^data:image\/[a-z]+;base64,/, '');
     
-    // Salva o arquivo
     await FileSystem.writeAsStringAsync(finalPath, cleanBase64, {
       encoding: FileSystem.EncodingType.Base64,
     });

@@ -3,9 +3,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import DeliveryListScreen from '../screens/DeliveryListScreen';
 import DeliveryDetailScreen from '../screens/DeliveryDetailScreen';
 import SyncQueueScreen from '../screens/SyncQueueScreen';
-import DeliveryConclusionScreen from '../screens/DeliveryConclusionScreen'; // NOVO IMPORT
-import DeliveryFailureScreen from '../screens/DeliveryFailureScreen';     // NOVO IMPORT
-import OptimizedSignatureScreen from '../screens/OptimizedSignatureScreen';   // NOVO IMPORT
+import DeliveryConclusionScreen from '../screens/DeliveryConclusionScreen';
+import DeliveryFailureScreen from '../screens/DeliveryFailureScreen';
+import OptimizedSignatureScreen from '../screens/OptimizedSignatureScreen';
+import ModernSignatureScreen from '../screens/ModernSignatureScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +36,11 @@ const AppStack = () => (
       name="Signature"
       component={OptimizedSignatureScreen}
       options={{ title: 'Assinatura Digital' }}
+    />
+    <Stack.Screen
+      name="ModernSignature"
+      component={ModernSignatureScreen}
+      options={{ title: 'Assinatura Digital (Nova)' }}
     />
     <Stack.Screen
       name="SyncQueue"

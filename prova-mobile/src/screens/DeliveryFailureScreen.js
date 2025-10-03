@@ -38,7 +38,6 @@ const DeliveryFailureScreen = () => {
         }
         
         try {
-            // **SIMULAÇÃO DE SALVAMENTO DE ARQUIVO**
             const mockTempPath = `file:///mock/temp/fail_photo_${Date.now()}.jpg`;
             const localPath = await savePhotoToLocal(mockTempPath, deliveryId, `failure_photo`);
             

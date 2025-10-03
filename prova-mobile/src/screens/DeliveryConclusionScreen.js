@@ -44,7 +44,7 @@ const DeliveryConclusionScreen = () => {
   };
   
   const handleCaptureSignature = () => {
-    navigation.navigate('Signature', {
+    navigation.navigate('ModernSignature', {
       deliveryId,
       onSignatureSave: async (signatureData) => {
         try {
@@ -130,7 +130,7 @@ const DeliveryConclusionScreen = () => {
         <View style={styles.signatureContainer}>
             {}
             <View style={styles.signatureBox}>
-                <Text style={styles.placeholderText}>Área de Assinatura Digital (Simulação)</Text>
+                <Text style={styles.placeholderText}>Área de Assinatura Digital</Text>
             </View>
             <Button title="✍️ Capturar Assinatura" onPress={handleCaptureSignature} disabled={isLoading} />
             {signatureUri && <Text style={styles.successText}>✅ Assinatura Capturada</Text>}
