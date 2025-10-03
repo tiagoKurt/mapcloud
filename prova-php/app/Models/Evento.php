@@ -1,9 +1,4 @@
 <?php
-/**
- * Model Entidade Evento
- * Representa um evento de rastreamento
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class Evento {
     private $db;
@@ -12,11 +7,6 @@ class Evento {
         $this->db = Database::getInstance();
     }
     
-    /**
-     * Criar novo evento
-     * @param array $dados
-     * @return int ID do evento criado
-     */
     public function criar($dados) {
         $sql = "INSERT INTO eventos (
             id_entrega, tipo_evento, descricao, latitude, longitude,
@@ -39,21 +29,11 @@ class Evento {
         ));
     }
     
-    /**
-     * Buscar eventos de uma entrega
-     * @param int $idEntrega
-     * @return array
-     */
     public function buscarPorEntrega($idEntrega) {
         $sql = "SELECT * FROM eventos WHERE id_entrega = ? ORDER BY timestamp_evento ASC";
         return $this->db->fetchAll($sql, array($idEntrega));
     }
     
-    /**
-     * Buscar eventos por tipo
-     * @param string $tipoEvento
-     * @return array
-     */
     public function buscarPorTipo($tipoEvento) {
         $sql = "SELECT e.*, ent.chave_nfe, ent.destinatario_nome 
                 FROM eventos e 
@@ -63,12 +43,6 @@ class Evento {
         return $this->db->fetchAll($sql, array($tipoEvento));
     }
     
-    /**
-     * Buscar eventos por período
-     * @param string $dataInicio
-     * @param string $dataFim
-     * @return array
-     */
     public function buscarPorPeriodo($dataInicio, $dataFim) {
         $sql = "SELECT e.*, ent.chave_nfe, ent.destinatario_nome 
                 FROM eventos e 
@@ -78,32 +52,17 @@ class Evento {
         return $this->db->fetchAll($sql, array($dataInicio, $dataFim));
     }
     
-    /**
-     * Buscar último evento de uma entrega
-     * @param int $idEntrega
-     * @return array|null
-     */
     public function buscarUltimoEvento($idEntrega) {
         $sql = "SELECT * FROM eventos WHERE id_entrega = ? ORDER BY timestamp_evento DESC LIMIT 1";
         return $this->db->fetchOne($sql, array($idEntrega));
     }
     
-    /**
-     * Contar eventos por entrega
-     * @param int $idEntrega
-     * @return int
-     */
     public function contarPorEntrega($idEntrega) {
         $sql = "SELECT COUNT(*) as total FROM eventos WHERE id_entrega = ?";
         $result = $this->db->fetchOne($sql, array($idEntrega));
         return (int)$result['total'];
     }
     
-    /**
-     * Buscar eventos com coordenadas
-     * @param int $idEntrega
-     * @return array
-     */
     public function buscarComCoordenadas($idEntrega) {
         $sql = "SELECT * FROM eventos 
                 WHERE id_entrega = ? 
@@ -113,13 +72,6 @@ class Evento {
         return $this->db->fetchAll($sql, array($idEntrega));
     }
     
-    /**
-     * Buscar eventos por tipo e período
-     * @param string $tipoEvento
-     * @param string $dataInicio
-     * @param string $dataFim
-     * @return array
-     */
     public function buscarPorTipoEPeriodo($tipoEvento, $dataInicio, $dataFim) {
         $sql = "SELECT e.*, ent.chave_nfe, ent.destinatario_nome 
                 FROM eventos e 
@@ -130,11 +82,6 @@ class Evento {
         return $this->db->fetchAll($sql, array($tipoEvento, $dataInicio, $dataFim));
     }
     
-    /**
-     * Buscar estatísticas de eventos
-     * @param int $idEntrega
-     * @return array
-     */
     public function buscarEstatisticas($idEntrega) {
         $sql = "SELECT 
                     COUNT(*) as total_eventos,
@@ -146,10 +93,6 @@ class Evento {
         return $this->db->fetchOne($sql, array($idEntrega));
     }
     
-    /**
-     * Buscar tipos de eventos únicos
-     * @return array
-     */
     public function buscarTiposUnicos() {
         $sql = "SELECT DISTINCT tipo_evento FROM eventos ORDER BY tipo_evento";
         $result = $this->db->fetchAll($sql);
@@ -160,11 +103,6 @@ class Evento {
         return $tipos;
     }
     
-    /**
-     * Buscar eventos recentes
-     * @param int $limite
-     * @return array
-     */
     public function buscarRecentes($limite = 10) {
         $sql = "SELECT e.*, ent.chave_nfe, ent.destinatario_nome 
                 FROM eventos e 

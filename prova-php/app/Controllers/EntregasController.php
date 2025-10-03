@@ -1,9 +1,4 @@
 <?php
-/**
- * Controller de Entregas
- * Gerencia operações relacionadas às entregas
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class EntregasController {
     private $entregaModel;
@@ -13,35 +8,27 @@ class EntregasController {
         $this->entregaModel = new Entrega();
     }
     
-    /**
-     * Listar entregas com paginação
-     */
     public function listar() {
         try {
             $limit = (int)Request::getParam('limit', 50);
             $offset = (int)Request::getParam('offset', 0);
             $status = Request::getParam('status');
             
-            // Validar parâmetros
             if ($limit > 100) {
-                $limit = 100; // Limite máximo
             }
             
             if ($offset < 0) {
                 $offset = 0;
             }
             
-            // Buscar entregas
             if ($status) {
                 $entregas = $this->entregaModel->buscarPorStatus($status);
             } else {
                 $entregas = $this->entregaModel->listar($limit, $offset);
             }
             
-            // Buscar total para paginação
             $total = $this->entregaModel->contarTotal();
             
-            // Formatar dados de resposta
             $dados = array();
             foreach ($entregas as $entrega) {
                 $dados[] = $this->formatarEntrega($entrega);
@@ -63,9 +50,6 @@ class EntregasController {
         }
     }
     
-    /**
-     * Buscar entrega específica
-     */
     public function buscar($params) {
         try {
             $chaveNfe = $params['chave_nfe'];
@@ -92,9 +76,6 @@ class EntregasController {
         }
     }
     
-    /**
-     * Criar nova entrega
-     */
     public function criar() {
         try {
             $dados = Request::getJson();
@@ -104,7 +85,6 @@ class EntregasController {
                 return;
             }
             
-            // Validar dados obrigatórios
             $camposObrigatorios = array('chave_nfe', 'numero_nfe', 'serie_nfe', 'data_emissao');
             foreach ($camposObrigatorios as $campo) {
                 if (empty($dados[$campo])) {
@@ -113,13 +93,11 @@ class EntregasController {
                 }
             }
             
-            // Verificar se entrega já existe
             if ($this->entregaModel->existe($dados['chave_nfe'])) {
                 Response::error('Entrega já existe', 409);
                 return;
             }
             
-            // Geocodificar endereço se necessário
             if (empty($dados['latitude']) || empty($dados['longitude'])) {
                 $geocoding = new GeocodingService();
                 $coordenadas = $geocoding->geocodificarEnderecoCompleto($dados);
@@ -130,11 +108,9 @@ class EntregasController {
                 }
             }
             
-            // Criar entrega
             $idEntrega = $this->entregaModel->criar($dados);
             
             if ($idEntrega) {
-                // Buscar entrega criada
                 $entrega = $this->entregaModel->buscarPorId($idEntrega);
                 
                 Response::json(array(
@@ -151,9 +127,6 @@ class EntregasController {
         }
     }
     
-    /**
-     * Atualizar status da entrega
-     */
     public function atualizarStatus($params) {
         try {
             $chaveNfe = $params['chave_nfe'];
@@ -187,11 +160,6 @@ class EntregasController {
         }
     }
     
-    /**
-     * Formatar dados da entrega para resposta
-     * @param array $entrega
-     * @return array
-     */
     private function formatarEntrega($entrega) {
         return array(
             'id_entrega' => (int)$entrega['id_entrega'],

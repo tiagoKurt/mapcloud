@@ -1,19 +1,7 @@
 <?php
-/**
- * Serviço de Geocodificação
- * Converte endereços/CEPs em coordenadas geográficas
- * Compatível com PHP 5.2/5.3 Legacy com mitigação SSL
- */
 
 class GeocodingService {
     
-    /**
-     * Geocodificar endereço usando Nominatim (OpenStreetMap)
-     * @param string $endereco
-     * @param string $cidade
-     * @param string $uf
-     * @return array|false
-     */
     public function geocodificarEndereco($endereco, $cidade, $uf) {
         $enderecoCompleto = $endereco . ', ' . $cidade . ', ' . $uf . ', Brasil';
         $url = NOMINATIM_URL . '?q=' . urlencode($enderecoCompleto) . '&format=json&limit=1&addressdetails=1';
@@ -32,11 +20,6 @@ class GeocodingService {
         return false;
     }
     
-    /**
-     * Geocodificar CEP usando ViaCEP
-     * @param string $cep
-     * @return array|false
-     */
     public function geocodificarCep($cep) {
         $cep = preg_replace('/[^0-9]/', '', $cep);
         
@@ -48,7 +31,6 @@ class GeocodingService {
         $resultado = $this->requestApiLegacy($url);
         
         if ($resultado && !isset($resultado['erro'])) {
-            // Buscar coordenadas do endereço retornado pelo ViaCEP
             $endereco = $resultado['logradouro'] . ', ' . $resultado['bairro'] . ', ' . $resultado['localidade'] . ', ' . $resultado['uf'];
             $coordenadas = $this->geocodificarEndereco($endereco, $resultado['localidade'], $resultado['uf']);
             
@@ -62,13 +44,7 @@ class GeocodingService {
         return false;
     }
     
-    /**
-     * Geocodificar endereço completo (logradouro + número + bairro + cidade + UF)
-     * @param array $dadosEndereco
-     * @return array|false
-     */
     public function geocodificarEnderecoCompleto($dadosEndereco) {
-        // Primeiro tenta com CEP se disponível
         if (!empty($dadosEndereco['cep'])) {
             $resultadoCep = $this->geocodificarCep($dadosEndereco['cep']);
             if ($resultadoCep && isset($resultadoCep['latitude'])) {
@@ -76,7 +52,6 @@ class GeocodingService {
             }
         }
         
-        // Se não conseguiu com CEP, tenta com endereço completo
         $endereco = '';
         if (!empty($dadosEndereco['logradouro'])) {
             $endereco .= $dadosEndereco['logradouro'];
@@ -95,13 +70,7 @@ class GeocodingService {
         return false;
     }
     
-    /**
-     * Fazer requisição HTTP com mitigação SSL para PHP Legacy
-     * @param string $url
-     * @return array|false
-     */
     private function requestApiLegacy($url) {
-        // Configuração do contexto para desabilitar verificação SSL (necessário para PHP 5.2/5.3)
         $options = array(
             'ssl' => array(
                 'verify_peer' => false,
@@ -116,7 +85,6 @@ class GeocodingService {
         
         $context = stream_context_create($options);
         
-        // Fazer requisição com supressão de erros
         $response = @file_get_contents($url, false, $context);
         
         if ($response === false) {
@@ -126,7 +94,6 @@ class GeocodingService {
             return false;
         }
         
-        // Decodificar JSON
         $data = json_decode($response, true);
         
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -139,16 +106,7 @@ class GeocodingService {
         return $data;
     }
     
-    /**
-     * Calcular distância entre duas coordenadas (Haversine)
-     * @param float $lat1
-     * @param float $lon1
-     * @param float $lat2
-     * @param float $lon2
-     * @return float Distância em quilômetros
-     */
     public function calcularDistancia($lat1, $lon1, $lat2, $lon2) {
-        $earthRadius = 6371; // Raio da Terra em km
         
         $dLat = deg2rad($lat2 - $lat1);
         $dLon = deg2rad($lon2 - $lon1);
@@ -162,22 +120,11 @@ class GeocodingService {
         return $earthRadius * $c;
     }
     
-    /**
-     * Validar coordenadas
-     * @param float $latitude
-     * @param float $longitude
-     * @return bool
-     */
     public function validarCoordenadas($latitude, $longitude) {
         return ($latitude >= -90 && $latitude <= 90) && 
                ($longitude >= -180 && $longitude <= 180);
     }
     
-    /**
-     * Formatar endereço para exibição
-     * @param array $dadosEndereco
-     * @return string
-     */
     public function formatarEndereco($dadosEndereco) {
         $endereco = '';
         

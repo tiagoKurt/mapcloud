@@ -1,9 +1,4 @@
 <?php
-/**
- * Controller de Métricas
- * Calcula e expõe KPIs e métricas logísticas
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class MetricasController {
     private $db;
@@ -12,30 +7,21 @@ class MetricasController {
         $this->db = Database::getInstance();
     }
     
-    /**
-     * Obter métricas gerais do sistema
-     */
     public function obterMetricas() {
         try {
             $metricas = array();
             
-            // KPIs gerais
             $metricas['kpis_gerais'] = $this->calcularKPIsGerais();
             
-            // Métricas de performance
             $metricas['performance'] = $this->calcularMetricasPerformance();
             
-            // Análise de gargalos
             $metricas['gargalos'] = $this->identificarGargalos();
             
-            // Métricas por período
-            $periodo = Request::getParam('periodo', '30'); // últimos 30 dias por padrão
+            $periodo = Request::getParam('periodo', '30');
             $metricas['periodo'] = $this->calcularMetricasPorPeriodo($periodo);
             
-            // Distribuição por status
             $metricas['distribuicao_status'] = $this->calcularDistribuicaoStatus();
             
-            // Top cidades de destino
             $metricas['top_cidades'] = $this->calcularTopCidades();
             
             Response::json(array(
@@ -48,10 +34,6 @@ class MetricasController {
         }
     }
     
-    /**
-     * Calcular KPIs gerais
-     * @return array
-     */
     private function calcularKPIsGerais() {
         $sql = "SELECT * FROM vw_kpis_gerais";
         $resultado = $this->db->fetchOne($sql);
@@ -79,12 +61,7 @@ class MetricasController {
         );
     }
     
-    /**
-     * Calcular métricas de performance
-     * @return array
-     */
     private function calcularMetricasPerformance() {
-        // Order Cycle Time (OCT) - tempo médio de ciclo
         $sql = "SELECT 
                     AVG(TIMESTAMPDIFF(HOUR, data_emissao, 
                         (SELECT MAX(timestamp_evento) FROM eventos WHERE id_entrega = entregas.id_entrega)
@@ -94,7 +71,6 @@ class MetricasController {
         
         $oct = $this->db->fetchOne($sql);
         
-        // On-Time Delivery (OTD) - percentual de entregas no prazo
         $sql = "SELECT 
                     COUNT(*) as total_entregas,
                     SUM(CASE WHEN data_prometida IS NOT NULL AND 
@@ -110,7 +86,6 @@ class MetricasController {
             $percentualOTD = round(($otd['entregas_no_prazo'] / $otd['total_entregas']) * 100, 2);
         }
         
-        // Índice de Ocorrência - percentual de entregas com problemas
         $sql = "SELECT 
                     COUNT(DISTINCT e.id_entrega) as total_entregas,
                     COUNT(DISTINCT CASE WHEN ev.tipo_evento IN ('Avaria', 'Extravio', 'Devolução') 
@@ -133,12 +108,7 @@ class MetricasController {
         );
     }
     
-    /**
-     * Identificar gargalos logísticos
-     * @return array
-     */
     private function identificarGargalos() {
-        // Tempo médio entre estágios
         $sql = "SELECT 
                     tipo_evento,
                     AVG(TIMESTAMPDIFF(HOUR, 
@@ -153,7 +123,6 @@ class MetricasController {
         
         $temposEstagios = $this->db->fetchAll($sql);
         
-        // Identificar maior gargalo
         $maiorGargalo = null;
         $maiorTempo = 0;
         
@@ -171,16 +140,10 @@ class MetricasController {
         );
     }
     
-    /**
-     * Calcular métricas por período
-     * @param int $dias
-     * @return array
-     */
     private function calcularMetricasPorPeriodo($dias) {
         $dataInicio = date('Y-m-d', strtotime("-{$dias} days"));
         $dataFim = date('Y-m-d');
         
-        // Entregas por dia
         $sql = "SELECT 
                     DATE(data_emissao) as data,
                     COUNT(*) as total_entregas,
@@ -192,7 +155,6 @@ class MetricasController {
         
         $entregasPorDia = $this->db->fetchAll($sql, array($dataInicio, $dataFim));
         
-        // Eventos por dia
         $sql = "SELECT 
                     DATE(timestamp_evento) as data,
                     COUNT(*) as total_eventos,
@@ -215,10 +177,6 @@ class MetricasController {
         );
     }
     
-    /**
-     * Calcular distribuição por status
-     * @return array
-     */
     private function calcularDistribuicaoStatus() {
         $sql = "SELECT 
                     status_atual,
@@ -231,10 +189,6 @@ class MetricasController {
         return $this->db->fetchAll($sql);
     }
     
-    /**
-     * Calcular top cidades de destino
-     * @return array
-     */
     private function calcularTopCidades() {
         $sql = "SELECT 
                     destinatario_cidade,
@@ -250,9 +204,6 @@ class MetricasController {
         return $this->db->fetchAll($sql);
     }
     
-    /**
-     * Obter métricas de uma entrega específica
-     */
     public function metricasEntrega($params) {
         try {
             $chaveNfe = $params['chave_nfe'];
@@ -262,7 +213,6 @@ class MetricasController {
                 return;
             }
             
-            // Buscar entrega
             $sql = "SELECT * FROM entregas WHERE chave_nfe = ?";
             $entrega = $this->db->fetchOne($sql, array($chaveNfe));
             
@@ -271,11 +221,9 @@ class MetricasController {
                 return;
             }
             
-            // Buscar métricas da entrega
             $sql = "SELECT * FROM vw_metricas_entregas WHERE id_entrega = ?";
             $metricas = $this->db->fetchOne($sql, array($entrega['id_entrega']));
             
-            // Calcular tempo de cada estágio
             $sql = "SELECT 
                         tipo_evento,
                         timestamp_evento,

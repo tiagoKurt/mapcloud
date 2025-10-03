@@ -1,9 +1,4 @@
 <?php
-/**
- * Controller de Webhook
- * Recebe eventos de rastreamento via webhook
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class WebhookController {
     private $entregaModel;
@@ -16,18 +11,13 @@ class WebhookController {
         $this->eventoModel = new Evento();
     }
     
-    /**
-     * Receber evento de rastreamento via webhook
-     */
     public function receberEvento() {
         try {
-            // Verificar método HTTP
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 Response::error('Método não permitido', 405);
                 return;
             }
             
-            // Capturar dados JSON
             $dados = Request::getJson();
             
             if (!$dados) {
@@ -35,13 +25,11 @@ class WebhookController {
                 return;
             }
             
-            // Validar dados obrigatórios
             if (empty($dados['chave_nfe']) || empty($dados['tipo_evento'])) {
                 Response::error('Chave NFe e tipo de evento são obrigatórios', 400);
                 return;
             }
             
-            // Buscar entrega
             $entrega = $this->entregaModel->buscarPorChaveNfe($dados['chave_nfe']);
             
             if (!$entrega) {
@@ -49,7 +37,6 @@ class WebhookController {
                 return;
             }
             
-            // Preparar dados do evento
             $dadosEvento = array(
                 'id_entrega' => $entrega['id_entrega'],
                 'tipo_evento' => $dados['tipo_evento'],
@@ -64,7 +51,6 @@ class WebhookController {
                 'observacoes_evento' => isset($dados['observacoes_evento']) ? $dados['observacoes_evento'] : null
             );
             
-            // Criar evento
             $idEvento = $this->eventoModel->criar($dadosEvento);
             
             if (!$idEvento) {
@@ -72,10 +58,8 @@ class WebhookController {
                 return;
             }
             
-            // Atualizar status da entrega se necessário
             $this->atualizarStatusEntrega($entrega, $dados['tipo_evento']);
             
-            // Log do evento
             $this->logEvento($dadosEvento, $idEvento);
             
             Response::json(array(
@@ -94,15 +78,9 @@ class WebhookController {
         }
     }
     
-    /**
-     * Atualizar status da entrega baseado no tipo de evento
-     * @param array $entrega
-     * @param string $tipoEvento
-     */
     private function atualizarStatusEntrega($entrega, $tipoEvento) {
         $novoStatus = null;
         
-        // Mapear tipos de evento para status
         $mapeamentoStatus = array(
             'Emissão NF-e' => 'Pendente',
             'Coleta' => 'Coletada',
@@ -127,11 +105,6 @@ class WebhookController {
         }
     }
     
-    /**
-     * Log do evento recebido
-     * @param array $dadosEvento
-     * @param int $idEvento
-     */
     private function logEvento($dadosEvento, $idEvento) {
         if (DEBUG_MODE) {
             $logData = array(
@@ -147,20 +120,13 @@ class WebhookController {
         }
     }
     
-    /**
-     * Validar autenticação do webhook (opcional)
-     * @param array $dados
-     * @return bool
-     */
     private function validarAutenticacao($dados) {
-        // Verificar API key se fornecida
         $apiKey = isset($_SERVER['HTTP_X_API_KEY']) ? $_SERVER['HTTP_X_API_KEY'] : null;
         
         if ($apiKey && $apiKey !== API_KEY) {
             return false;
         }
         
-        // Verificar assinatura se fornecida
         $assinatura = isset($_SERVER['HTTP_X_SIGNATURE']) ? $_SERVER['HTTP_X_SIGNATURE'] : null;
         
         if ($assinatura) {
@@ -175,9 +141,6 @@ class WebhookController {
         return true;
     }
     
-    /**
-     * Processar múltiplos eventos em lote
-     */
     public function processarLote() {
         try {
             $dados = Request::getJson();
@@ -192,17 +155,14 @@ class WebhookController {
             
             foreach ($dados['eventos'] as $index => $evento) {
                 try {
-                    // Simular recebimento individual
-                    $_POST = array(); // Limpar POST
+                    $_POST = array();
                     $_SERVER['REQUEST_METHOD'] = 'POST';
                     
-                    // Simular dados JSON
                     $jsonData = json_encode($evento);
                     $tempFile = tmpfile();
                     fwrite($tempFile, $jsonData);
                     rewind($tempFile);
                     
-                    // Capturar output
                     ob_start();
                     $this->receberEvento();
                     $output = ob_get_clean();

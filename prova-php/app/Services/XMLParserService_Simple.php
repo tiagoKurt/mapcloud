@@ -1,22 +1,12 @@
 <?php
-/**
- * Serviço simplificado de Parsing de XML (NF-e)
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class XMLParserService_Simple {
     
-    /**
-     * Parsear arquivo XML de NF-e
-     * @param string $caminhoArquivo
-     * @return array|false
-     */
     public function parsearNFe($caminhoArquivo) {
         if (!file_exists($caminhoArquivo)) {
             return false;
         }
         
-        // Carregar XML usando SimpleXML
         $xml = @simplexml_load_file($caminhoArquivo);
         
         if ($xml === false) {
@@ -26,14 +16,12 @@ class XMLParserService_Simple {
         try {
             $dados = array();
             
-            // Informações básicas da NF-e
             $dados['chave_nfe'] = (string)$xml->infNFe['Id'];
             $dados['numero_nfe'] = (string)$xml->infNFe->ide->nNF;
             $dados['serie_nfe'] = (string)$xml->infNFe->ide->serie;
             $dados['data_emissao'] = (string)$xml->infNFe->ide->dhEmi;
             $dados['valor_total'] = (float)$xml->infNFe->total->ICMSTot->vNF;
             
-            // Dados do destinatário
             $dados['destinatario_nome'] = (string)$xml->infNFe->dest->xNome;
             $dados['destinatario_cnpj_cpf'] = (string)$xml->infNFe->dest->CNPJ;
             $dados['destinatario_cep'] = (string)$xml->infNFe->dest->enderDest->CEP;
@@ -44,14 +32,11 @@ class XMLParserService_Simple {
             $dados['destinatario_uf'] = (string)$xml->infNFe->dest->enderDest->UF;
             $dados['destinatario_pais'] = (string)$xml->infNFe->dest->enderDest->xPais;
             
-            // Coordenadas (serão preenchidas pela geocodificação)
             $dados['latitude'] = null;
             $dados['longitude'] = null;
             
-            // Status inicial
             $dados['status_atual'] = 'Pendente';
             
-            // Peso total (simplificado)
             $dados['peso_total'] = 1.0;
             
             return $dados;
@@ -64,11 +49,6 @@ class XMLParserService_Simple {
         }
     }
     
-    /**
-     * Extrair informações básicas do arquivo
-     * @param string $caminhoArquivo
-     * @return array
-     */
     public function extrairInfoBasica($caminhoArquivo) {
         $info = array(
             'tamanho_arquivo' => filesize($caminhoArquivo),

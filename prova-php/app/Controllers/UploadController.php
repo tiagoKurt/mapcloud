@@ -1,9 +1,4 @@
 <?php
-/**
- * Controller de Upload
- * Gerencia upload e processamento de arquivos XML (NF-e)
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class UploadController {
     private $entregaModel;
@@ -20,12 +15,8 @@ class UploadController {
         $this->geocoding = new GeocodingService();
     }
     
-    /**
-     * Upload e processamento de NF-e
-     */
     public function uploadNFe() {
         try {
-            // Verificar se arquivo foi enviado
             if (!isset($_FILES['xml_file']) || $_FILES['xml_file']['error'] !== UPLOAD_ERR_OK) {
                 Response::error('Erro no upload do arquivo', 400);
                 return;
@@ -33,14 +24,12 @@ class UploadController {
             
             $arquivo = $_FILES['xml_file'];
             
-            // Validar arquivo
             $validacao = $this->validarArquivo($arquivo);
             if (!$validacao['valido']) {
                 Response::error($validacao['erro'], 400);
                 return;
             }
             
-            // Mover arquivo para diretório de uploads
             $nomeArquivo = $this->gerarNomeArquivo($arquivo['name']);
             $caminhoDestino = UPLOAD_DIR . $nomeArquivo;
             
@@ -49,25 +38,20 @@ class UploadController {
                 return;
             }
             
-            // Processar XML
             $dadosNFe = $this->xmlParser->parsearNFe($caminhoDestino);
             
             if (!$dadosNFe) {
-                // Remover arquivo se parsing falhou
                 unlink($caminhoDestino);
                 Response::error('Erro ao processar arquivo XML', 400);
                 return;
             }
             
-            // Verificar se entrega já existe
             if ($this->entregaModel->existe($dadosNFe['chave_nfe'])) {
-                // Remover arquivo duplicado
                 unlink($caminhoDestino);
                 Response::error('NF-e já cadastrada no sistema', 409);
                 return;
             }
             
-            // Geocodificar endereço se necessário
             if (empty($dadosNFe['latitude']) || empty($dadosNFe['longitude'])) {
                 $coordenadas = $this->geocoding->geocodificarEnderecoCompleto($dadosNFe);
                 
@@ -77,20 +61,16 @@ class UploadController {
                 }
             }
             
-            // Criar entrega no banco
             $idEntrega = $this->entregaModel->criar($dadosNFe);
             
             if (!$idEntrega) {
-                // Remover arquivo se falhou ao salvar
                 unlink($caminhoDestino);
                 Response::error('Erro ao salvar entrega no banco de dados', 500);
                 return;
             }
             
-            // Criar evento inicial
             $this->criarEventoInicial($idEntrega, $dadosNFe);
             
-            // Buscar entrega criada
             $entrega = $this->entregaModel->buscarPorId($idEntrega);
             
             Response::json(array(
@@ -109,13 +89,7 @@ class UploadController {
         }
     }
     
-    /**
-     * Validar arquivo enviado
-     * @param array $arquivo
-     * @return array
-     */
     private function validarArquivo($arquivo) {
-        // Verificar tamanho
         if ($arquivo['size'] > MAX_FILE_SIZE) {
             return array(
                 'valido' => false,
@@ -123,7 +97,6 @@ class UploadController {
             );
         }
         
-        // Verificar tipo MIME
         $tiposPermitidos = array(
             'text/xml',
             'application/xml',
@@ -137,7 +110,6 @@ class UploadController {
             );
         }
         
-        // Verificar extensão
         $extensao = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
         if ($extensao !== 'xml') {
             return array(
@@ -146,7 +118,6 @@ class UploadController {
             );
         }
         
-        // Verificar se é um XML válido
         $conteudo = file_get_contents($arquivo['tmp_name']);
         if (strpos($conteudo, '<?xml') !== 0) {
             return array(
@@ -158,11 +129,6 @@ class UploadController {
         return array('valido' => true);
     }
     
-    /**
-     * Gerar nome único para arquivo
-     * @param string $nomeOriginal
-     * @return string
-     */
     private function gerarNomeArquivo($nomeOriginal) {
         $extensao = pathinfo($nomeOriginal, PATHINFO_EXTENSION);
         $timestamp = date('Y-m-d_H-i-s');
@@ -171,11 +137,6 @@ class UploadController {
         return $timestamp . '_' . $hash . '.' . $extensao;
     }
     
-    /**
-     * Criar evento inicial da entrega
-     * @param int $idEntrega
-     * @param array $dadosNFe
-     */
     private function criarEventoInicial($idEntrega, $dadosNFe) {
         loadModel('Evento');
         $eventoModel = new Evento();
@@ -197,11 +158,6 @@ class UploadController {
         $eventoModel->criar($dadosEvento);
     }
     
-    /**
-     * Formatar dados da entrega para resposta
-     * @param array $entrega
-     * @return array
-     */
     private function formatarEntrega($entrega) {
         return array(
             'id_entrega' => (int)$entrega['id_entrega'],
@@ -232,9 +188,6 @@ class UploadController {
         );
     }
     
-    /**
-     * Listar arquivos XML enviados
-     */
     public function listarArquivos() {
         try {
             $arquivos = array();
@@ -269,9 +222,6 @@ class UploadController {
         }
     }
     
-    /**
-     * Remover arquivo XML
-     */
     public function removerArquivo($params) {
         try {
             $nomeArquivo = $params['nome_arquivo'];

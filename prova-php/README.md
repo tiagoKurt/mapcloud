@@ -228,12 +228,3 @@ Os logs são salvos em:
 Este projeto foi desenvolvido como prova técnica para o MapCloud Mini Prova, seguindo as especificações de compatibilidade com PHP 5.2/5.3 Legacy.
 
 ## 👥 Suporte
-
-Para dúvidas ou problemas:
-1. Verifique a seção de Solução de Problemas
-2. Consulte os logs do sistema
-3. Verifique a documentação das APIs utilizadas
-
----
-
-**Desenvolvido com ❤️ para o MapCloud Mini Prova**

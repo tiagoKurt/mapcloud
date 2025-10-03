@@ -1,8 +1,4 @@
 <?php
-/**
- * Controller simplificado para Métricas
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class MetricasController {
     private $db;

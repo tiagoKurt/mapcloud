@@ -1,9 +1,4 @@
 <?php
-/**
- * Controller de Rastreamento
- * Gerencia operações de rastreamento de entregas
- * Compatível com PHP 5.2/5.3 Legacy
- */
 
 class RastreamentoController {
     private $entregaModel;
@@ -16,9 +11,6 @@ class RastreamentoController {
         $this->eventoModel = new Evento();
     }
     
-    /**
-     * Rastrear entrega por chave NFe
-     */
     public function rastrear($chaveNfe) {
         try {
             if (empty($chaveNfe)) {
@@ -26,7 +18,6 @@ class RastreamentoController {
                 return;
             }
             
-            // Buscar entrega
             $entrega = $this->entregaModel->buscarPorChaveNfe($chaveNfe);
             
             if (!$entrega) {
@@ -34,13 +25,10 @@ class RastreamentoController {
                 return;
             }
             
-            // Buscar eventos da entrega
             $eventos = $this->eventoModel->buscarPorEntrega($entrega['id_entrega']);
             
-            // Buscar estatísticas
             $estatisticas = $this->eventoModel->buscarEstatisticas($entrega['id_entrega']);
             
-            // Formatar dados de rastreamento
             $dadosRastreamento = $this->formatarDadosRastreamento($entrega, $eventos, $estatisticas);
             
             Response::json(array(
@@ -53,9 +41,6 @@ class RastreamentoController {
         }
     }
     
-    /**
-     * Buscar eventos com coordenadas para mapa
-     */
     public function eventosMapa($chaveNfe) {
         try {
             if (empty($chaveNfe)) {
@@ -70,10 +55,8 @@ class RastreamentoController {
                 return;
             }
             
-            // Buscar apenas eventos com coordenadas
             $eventos = $this->eventoModel->buscarComCoordenadas($entrega['id_entrega']);
             
-            // Formatar para mapa
             $pontosMapa = array();
             foreach ($eventos as $evento) {
                 $pontosMapa[] = array(
@@ -103,9 +86,6 @@ class RastreamentoController {
         }
     }
     
-    /**
-     * Buscar timeline de eventos
-     */
     public function timeline($chaveNfe) {
         try {
             if (empty($chaveNfe)) {
@@ -122,7 +102,6 @@ class RastreamentoController {
             
             $eventos = $this->eventoModel->buscarPorEntrega($entrega['id_entrega']);
             
-            // Formatar timeline
             $timeline = array();
             foreach ($eventos as $evento) {
                 $timeline[] = array(
@@ -162,15 +141,7 @@ class RastreamentoController {
         }
     }
     
-    /**
-     * Formatar dados completos de rastreamento
-     * @param array $entrega
-     * @param array $eventos
-     * @param array $estatisticas
-     * @return array
-     */
     private function formatarDadosRastreamento($entrega, $eventos, $estatisticas) {
-        // Formatar eventos
         $eventosFormatados = array();
         foreach ($eventos as $evento) {
             $eventosFormatados[] = array(
@@ -192,7 +163,6 @@ class RastreamentoController {
             );
         }
         
-        // Calcular progresso
         $progresso = $this->calcularProgresso($eventos);
         
         return array(
@@ -227,11 +197,6 @@ class RastreamentoController {
         );
     }
     
-    /**
-     * Calcular progresso da entrega baseado nos eventos
-     * @param array $eventos
-     * @return array
-     */
     private function calcularProgresso($eventos) {
         $etapas = array(
             'Emissão NF-e' => 0,
@@ -264,11 +229,6 @@ class RastreamentoController {
         );
     }
     
-    /**
-     * Formatar endereço de destino
-     * @param array $entrega
-     * @return string
-     */
     private function formatarEnderecoDestino($entrega) {
         $endereco = '';
         
